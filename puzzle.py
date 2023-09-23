@@ -84,7 +84,7 @@ class GameGrid(Frame):
 
     def key_down(self, event):
         key = event.keysym
-        print(event)
+        #print(event)
         if key == c.KEY_QUIT: exit()
         if key == c.KEY_BACK and len(self.history_matrixs) > 1:
             self.matrix = self.history_matrixs.pop()

@@ -1,0 +1,52 @@
+<mxfile host="Electron" modified="2023-09-23T22:17:14.532Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.2.8 Chrome/112.0.5615.165 Electron/24.2.0 Safari/537.36" etag="OtGvs_HA5x5RKZDHyVKJ" version="21.2.8" type="device">
+  <diagram name="Page-1" id="To86OWIeAmm8EfYFwvBU">
+    <mxGraphModel dx="1030" dy="595" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="lFQ_vgPZxERyJeK_hRX--3" value="" style="group;fillColor=default;container=0;" parent="1" vertex="1" connectable="0">
+          <mxGeometry x="80" y="40" width="400" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="5iskgywGt2OKVboT_QR2-3" value="State" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="5iskgywGt2OKVboT_QR2-1" target="5iskgywGt2OKVboT_QR2-2" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="360" y="180" />
+              <mxPoint x="360" y="300" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5iskgywGt2OKVboT_QR2-5" value="Reward" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="5iskgywGt2OKVboT_QR2-1" target="5iskgywGt2OKVboT_QR2-2" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="400" y="140" />
+              <mxPoint x="400" y="340" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5iskgywGt2OKVboT_QR2-1" value="«Environment»&lt;br&gt;2048 Game" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="200" y="120" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="5iskgywGt2OKVboT_QR2-4" value="Action" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="5iskgywGt2OKVboT_QR2-2" target="5iskgywGt2OKVboT_QR2-1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="140" y="320" />
+              <mxPoint x="140" y="160" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5iskgywGt2OKVboT_QR2-2" value="«Agent»&lt;br&gt;Player" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="200" y="280" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="-Y1yN9rdcXVc_xZqdeiv-1" value="" style="group" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="80" y="40" width="400" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="lFQ_vgPZxERyJeK_hRX--1" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" parent="-Y1yN9rdcXVc_xZqdeiv-1" vertex="1">
+          <mxGeometry width="400" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="lFQ_vgPZxERyJeK_hRX--2" value="Reinforcement Training circle" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;" parent="-Y1yN9rdcXVc_xZqdeiv-1" vertex="1">
+          <mxGeometry y="20" width="400" height="33.75" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
