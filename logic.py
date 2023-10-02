@@ -41,7 +41,8 @@ def add_two(mat):
     while mat[a][b] != 0:
         a = random.randint(0, len(mat)-1)
         b = random.randint(0, len(mat)-1)
-    mat[a][b] = 2
+    # 2 and 4 are in a 80:20 ratio
+    mat[a][b] = 2 if (random.random() < .8) else 4
     return mat
 
 ###########
