@@ -92,7 +92,10 @@ def game_state(mat):
 # 0 marks for completely incorrect solutions
 # 1 mark for solutions that show general understanding
 # 2 marks for correct solutions that work for all sizes of matrices
-
+#
+# 1 2 3    3 2 1
+# 4 5 6 -> 6 5 4
+# 7 8 9    9 8 7
 def reverse(mat):
     new = []
     for i in range(len(mat)):
@@ -110,7 +113,10 @@ def reverse(mat):
 # 0 marks for completely incorrect solutions
 # 1 mark for solutions that show general understanding
 # 2 marks for correct solutions that work for all sizes of matrices
-
+#
+# 1 2 3    1 4 7
+# 4 5 6 -> 2 5 8
+# 7 8 9    3 6 9
 def transpose(mat):
     new = []
     for i in range(len(mat[0])):
@@ -151,48 +157,50 @@ def cover_up(mat):
     return new, done
 
 def merge(mat, done):
+    reward = 0
     for i in range(c.GRID_LEN):
         for j in range(c.GRID_LEN-1):
             if mat[i][j] == mat[i][j+1] and mat[i][j] != 0:
                 mat[i][j] *= 2
+                reward += mat[i][j]
                 mat[i][j+1] = 0
                 done = True
-    return mat, done
+    return mat, done, reward
 
 def up(game):
     print("up")
     # return matrix after shifting up
     game = transpose(game)
     game, done = cover_up(game)
-    game, done = merge(game, done)
+    game, done, reward = merge(game, done)
     game = cover_up(game)[0]
     game = transpose(game)
-    return game, done
+    return game, done, reward
 
 def down(game):
     print("down")
     # return matrix after shifting down
     game = reverse(transpose(game))
     game, done = cover_up(game)
-    game, done = merge(game, done)
+    game, done, reward = merge(game, done)
     game = cover_up(game)[0]
     game = transpose(reverse(game))
-    return game, done
+    return game, done, reward
 
 def left(game):
     print("left")
     # return matrix after shifting left
     game, done = cover_up(game)
-    game, done = merge(game, done)
+    game, done, reward = merge(game, done)
     game = cover_up(game)[0]
-    return game, done
+    return game, done, reward
 
 def right(game):
     print("right")
     # return matrix after shifting right
     game = reverse(game)
     game, done = cover_up(game)
-    game, done = merge(game, done)
+    game, done, reward = merge(game, done)
     game = cover_up(game)[0]
     game = reverse(game)
-    return game, done
+    return game, done, reward
