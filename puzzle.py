@@ -91,7 +91,7 @@ class GameGrid(Frame):
             self.update_grid_cells()
             print('back on step total step:', len(self.history_matrixs))
         elif key in self.commands:
-            self.matrix, done = self.commands[key](self.matrix)
+            self.matrix, done, reward = self.commands[key](self.matrix)
             if done:
                 self.matrix = logic.add_two(self.matrix)
                 # record last move
