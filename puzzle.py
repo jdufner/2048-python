@@ -2,6 +2,7 @@ from tkinter import Frame, Label, CENTER
 import random
 import logic
 import constants as c
+import numpy as np
 
 def gen():
     return random.randint(0, c.GRID_LEN - 1)
@@ -35,7 +36,7 @@ class GameGrid(Frame):
         self.history_matrixs = []
         self.update_grid_cells()
 
-        self.mainloop()
+        #self.mainloop()
 
     def init_grid(self):
         background = Frame(self, bg=c.BACKGROUND_COLOR_GAME,width=c.SIZE, height=c.SIZE)
@@ -83,8 +84,11 @@ class GameGrid(Frame):
         self.update_idletasks()
 
     def key_down(self, event):
-        key = event.keysym
         #print(event)
+        key = event.keysym
+        self._key_down(key)
+
+    def _key_down(self, key):
         if key == c.KEY_QUIT: exit()
         if key == c.KEY_BACK and len(self.history_matrixs) > 1:
             self.matrix = self.history_matrixs.pop()
@@ -110,4 +114,20 @@ class GameGrid(Frame):
             index = (gen(), gen())
         self.matrix[index[0]][index[1]] = 2
 
-game_grid = GameGrid()
+    def play_step(self, action):
+        key = self._key_from_action(action)
+        self._key_down(key)
+
+    def _key_from_action(self, action):
+        if np.array_equal(action, [1, 0, 0, 0]):
+            key = c.KEY_RIGHT
+        elif np.array_equal(action, [0, 1, 0, 0]):
+            key = c.KEY_DOWN
+        elif np.array_equal(action, [0, 0, 1, 0]):
+            key = c.KEY_LEFT
+        else:
+            key = c.KEY_UP
+        return key
+
+if __name__ == '__main__':
+    game_grid = GameGrid()
