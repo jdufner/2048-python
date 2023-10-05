@@ -4,3 +4,7 @@
 # python
 *.pyc
 __pycache__
+
+# mish
+*.bak
+*.patch
