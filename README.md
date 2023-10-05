@@ -75,7 +75,11 @@ The play step function is the interface provided by the game (environment) to th
 
 The Agent uses Deep Q Learning (DQN) from PyTorch library for training.
 
-### Python dependencies
+### Pre-requisites
+
+Not a pre-requisite, but a recommendation is to set up a [virtual environment](https://www.freecodecamp.org/news/how-to-setup-virtual-environments-in-python/).
+
+#### Python dependencies
 
 Following libs are required:
 
@@ -83,6 +87,21 @@ Following libs are required:
 * torchvision
 * matplotlib
 * ipython
+
+#### Installation
+
+1. Enter your virtual environment.
+2. Install libraries without `requirements.txt`.
+
+As local admin
+
+`pip install torch torchvision matplotlib ipython`
+
+As Non-admin
+
+`python -m pip install torch torchvision matplotlib ipython`
+
+TODO: Create a requirements.txt file to make it easier.
 
 ## References
 
