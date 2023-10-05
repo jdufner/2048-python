@@ -33,6 +33,8 @@ class GameGrid(Frame):
         self.grid_cells = []
         self.init_grid()
         self.matrix = logic.new_game(c.GRID_LEN)
+        self.done = False
+        self.reward = 0
         self.history_matrixs = []
         self.update_grid_cells()
 
@@ -41,7 +43,6 @@ class GameGrid(Frame):
     def init_grid(self):
         background = Frame(self, bg=c.BACKGROUND_COLOR_GAME,width=c.SIZE, height=c.SIZE)
         background.grid()
-
         for i in range(c.GRID_LEN):
             grid_row = []
             for j in range(c.GRID_LEN):
@@ -95,7 +96,7 @@ class GameGrid(Frame):
             self.update_grid_cells()
             print('back on step total step:', len(self.history_matrixs))
         elif key in self.commands:
-            self.matrix, done, reward = self.commands[key](self.matrix)
+            self.matrix, done, self.reward, reward_matrix = self.commands[key](self.matrix)
             if done:
                 self.matrix = logic.add_two(self.matrix)
                 # record last move
@@ -104,9 +105,14 @@ class GameGrid(Frame):
                 if logic.game_state(self.matrix) == 'win':
                     self.grid_cells[1][1].configure(text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
                     self.grid_cells[1][2].configure(text="Win!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+                    self.done = True
                 if logic.game_state(self.matrix) == 'lose':
                     self.grid_cells[1][1].configure(text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
                     self.grid_cells[1][2].configure(text="Lose!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+                    self.reward = -10
+                    self.done = True
+            else:
+                self.reward = -1
 
     def generate_next(self):
         index = (gen(), gen())
@@ -114,9 +120,12 @@ class GameGrid(Frame):
             index = (gen(), gen())
         self.matrix[index[0]][index[1]] = 2
 
+    # must return reward, done, score
     def play_step(self, action):
         key = self._key_from_action(action)
         self._key_down(key)
+        score = logic.score(self.matrix)
+        return self.reward, self.done, score
 
     def _key_from_action(self, action):
         if np.array_equal(action, [1, 0, 0, 0]):
@@ -128,6 +137,13 @@ class GameGrid(Frame):
         else:
             key = c.KEY_UP
         return key
+    
+    def reset(self):
+        self.matrix = logic.new_game(c.GRID_LEN)
+        self.done = False
+        self.reward = 0
+        self.history_matrixs = []
+        self.update_grid_cells()       
 
 if __name__ == '__main__':
     game_grid = GameGrid()
