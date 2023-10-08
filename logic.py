@@ -164,7 +164,8 @@ def cover_up(mat):
     return new, done
 
 def merge(mat, done):
-    reward = 0
+    reward_count_fields = 0
+    reward_sum_field = 0
     reward_matrix = []
     for i in range(c.GRID_LEN):
         reward_matrix.append([])
@@ -172,50 +173,51 @@ def merge(mat, done):
             reward_matrix[i].append(0)
             if mat[i][j] == mat[i][j+1] and mat[i][j] != 0:
                 mat[i][j] *= 2
-                reward += mat[i][j]
+                reward_count_fields += 1
+                reward_sum_field += mat[i][j]
                 reward_matrix[i][j] = mat[i][j]
                 mat[i][j+1] = 0
                 done = True
         reward_matrix[i].append(0)
-    return mat, done, reward, reward_matrix
+    return mat, done, reward_count_fields, reward_sum_field, reward_matrix
 
 def up(game):
     #print("up")
     # return matrix after shifting up
     game = transpose(game)
     game, done = cover_up(game)
-    game, done, reward, reward_matrix = merge(game, done)
+    game, done, reward_count_fields, reward_sum_field, reward_matrix = merge(game, done)
     game = cover_up(game)[0]
     game = transpose(game)
     reward_matrix = transpose(reward_matrix)
-    return game, done, reward, reward_matrix
+    return game, done, reward_count_fields, reward_sum_field, reward_matrix
 
 def down(game):
     #print("down")
     # return matrix after shifting down
     game = reverse(transpose(game))
     game, done = cover_up(game)
-    game, done, reward, reward_matrix = merge(game, done)
+    game, done, reward_count_fields, reward_sum_field, reward_matrix = merge(game, done)
     game = cover_up(game)[0]
     game = transpose(reverse(game))
     reward_matrix = transpose(reverse(reward_matrix))
-    return game, done, reward, reward_matrix
+    return game, done, reward_count_fields, reward_sum_field, reward_matrix
 
 def left(game):
     #print("left")
     # return matrix after shifting left
     game, done = cover_up(game)
-    game, done, reward, reward_matrix = merge(game, done)
+    game, done, reward_count_fields, reward_sum_field, reward_matrix = merge(game, done)
     game = cover_up(game)[0]
-    return game, done, reward, reward_matrix
+    return game, done, reward_count_fields, reward_sum_field, reward_matrix
 
 def right(game):
     #print("right")
     # return matrix after shifting right
     game = reverse(game)
     game, done = cover_up(game)
-    game, done, reward, reward_matrix = merge(game, done)
+    game, done, reward_count_fields, reward_sum_field, reward_matrix = merge(game, done)
     game = cover_up(game)[0]
     game = reverse(game)
     reward_matrix = reverse(reward_matrix)
-    return game, done, reward, reward_matrix
+    return game, done, reward_count_fields, reward_sum_field, reward_matrix

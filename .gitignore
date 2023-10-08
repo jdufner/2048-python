@@ -5,6 +5,9 @@
 *.pyc
 __pycache__
 
-# mish
+# misc
 *.bak
 *.patch
+
+# Trained model
+model/
