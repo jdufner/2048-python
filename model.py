@@ -3,18 +3,29 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 import os
+import numpy as np
+
+def determine_device():
+    # if GPU is to be used
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    #device = "cpu"
+    return device
 
 class Linear_QNet(nn.Module):
-    def __init__(self, input_size, hidden_size, output_size):
+    def __init__(self, input_size, hidden_size, hidden_number, output_size):
         super().__init__()
-        self.linear1 = nn.Linear(input_size, hidden_size)
-        self.linear2 = nn.Linear(hidden_size, hidden_size)
-        self.linear3 = nn.Linear(hidden_size, output_size)
+        self.device = determine_device()
+        self.input_layer = nn.Linear(input_size, hidden_size, dtype=torch.float, device=self.device)
+        self.hidden_layers = []
+        for i in range(hidden_number - 1):
+            self.hidden_layers.append(nn.Linear(hidden_size, hidden_size, dtype=torch.float, device=self.device))
+        self.output_layer = nn.Linear(hidden_size, output_size, dtype=torch.float, device=self.device)
 
     def forward(self, x):
-        x = F.relu(self.linear1(x))
-        x = F.relu(self.linear2(x))
-        x = self.linear3(x)
+        x = F.relu(self.input_layer(x)).to(self.device)
+        for hidden_layer in self.hidden_layers:
+            x = F.relu(hidden_layer(x)).to(self.device)
+        x = self.output_layer(x).to(self.device)
         return x
     
     def save(self, file_name='model.pth'):
@@ -24,26 +35,35 @@ class Linear_QNet(nn.Module):
         file_name = os.path.join(model_folder_path, file_name)
         torch.save(self.state_dict(), file_name)
 
+    def predict(self, state):
+        state = np.array(state)
+        state0 = torch.tensor(state, dtype=torch.float, device=self.device)
+        prediction = self(state0)
+        move = torch.argmax(prediction).item()
+        return move
+
 class QTrainer:
     def __init__(self, model, lr, gamma):
         self.model = model
         self.lr = lr
         self.gamma = gamma
         self.optimizer = optim.Adam(model.parameters(), lr=self.lr)
-        self.criterion = nn.MSELoss()
+        self.criterion = nn.MSELoss().to(self.model.device)
 
     def train_step(self, state, action, reward, next_state, done):
-        state = torch.tensor(state, dtype=torch.float)
-        action = torch.tensor(action, dtype=torch.long)
-        reward = torch.tensor(reward, dtype=torch.float)
-        next_state = torch.tensor(next_state, dtype=torch.float)
+        state = np.array(state)
+        state = torch.tensor(state, dtype=torch.float, device=self.model.device)
+        action = torch.tensor(action, dtype=torch.long, device=self.model.device)
+        reward = torch.tensor(reward, dtype=torch.float, device=self.model.device)
+        next_state = np.array(next_state)
+        next_state = torch.tensor(next_state, dtype=torch.float, device=self.model.device)
 
         if len(state.shape) == 1:
             # (1, x)
-            state = torch.unsqueeze(state, 0)
-            action = torch.unsqueeze(action, 0)
-            reward = torch.unsqueeze(reward, 0)
-            next_state = torch.unsqueeze(next_state, 0)
+            state = torch.unsqueeze(state, 0) #.to(self.model.device)
+            action = torch.unsqueeze(action, 0) #.to(self.model.device)
+            reward = torch.unsqueeze(reward, 0) #.to(self.model.device)
+            next_state = torch.unsqueeze(next_state, 0) #.to(self.model.device)
             done = (done, )
 
         # 1: predicted Q values with current state

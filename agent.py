@@ -1,42 +1,46 @@
-import torch
 import random
 import numpy as np
 from collections import deque
 from puzzle import GameGrid
 from model import Linear_QNet
 from model import QTrainer
+import model
 from helper import plot
 import math
 import time
+from datetime import datetime
+import os
 
-MAX_MEMORY = 100_000
-BATCH_SIZE = 1_000
+MAX_MEMORY = 1_000_000
+BATCH_SIZE = 10_000
 
-LEARNING_RATE = 0.001 # alpha
+LEARNING_RATE = 0.01 # alpha
 GAMMA = 0.9
 
 EPSILON_START = 0.9
 EPSILON_END = 0.05
-EPSILON_DECAY = 3_000
+EPSILON_DECAY = 500
 
-MAX_NUMBER_GAMES = 20_000
+MAX_NUMBER_GAMES = 1_000
 
 DRAW_GAME = False
 DRAW_GRAPH = False
 
+INPUT_LAYER_SIZE = 16
+HIDDEN_LAYER_SIZE = 512
+HIDDEN_LAYER_NUMBER = 3
+OUTPUT_LAYER_SIZE = 4
+
 class Agent:
+    game_number = 0
 
     def __init__(self):
-        self.number_games = 1
-        self.epsilon = EPSILON_START # randomness
-        self.number_exploration = 0
-        self.number_exploitation = 0
+        self.reset()
         self.memory = deque(maxlen=MAX_MEMORY) # popleft()
-        self.model = Linear_QNet(16, 512, 4)
+        self.model = Linear_QNet(INPUT_LAYER_SIZE, HIDDEN_LAYER_SIZE, HIDDEN_LAYER_NUMBER, OUTPUT_LAYER_SIZE).to(model.determine_device)
         self.trainer = QTrainer(self.model, lr=LEARNING_RATE, gamma=GAMMA)
 
     def get_state(self, game):
-        #return np.asanyarray(game.matrix).ravel()
         return np.array(np.ravel(game.matrix), dtype=int)
 
     def remember(self, state, action, reward, next_state, done):
@@ -53,12 +57,11 @@ class Agent:
     def train_short_memory(self, state, action, reward, next_state, done):
         self.trainer.train_step(state, action, reward, next_state, done)
 
-    def calculate_epsilon(self):
-        # Old exploration calculation
-        #self.epsilon = 10_000 - self.number_games
-        #if random.randint(0, 40_000) < self.epsilon:
-        # New exploration calculation
-        self.epsilon = EPSILON_END + (EPSILON_START - EPSILON_END) * math.exp(-1. * self.number_games / EPSILON_DECAY)
+    def reset(self):
+        self.game_number += 1
+        self.number_exploration = 0
+        self.number_exploitation = 0
+        self.epsilon = EPSILON_END + (EPSILON_START - EPSILON_END) * math.exp(-1. * (self.game_number) / EPSILON_DECAY)
 
     def get_action(self, state):
         final_move = [0, 0, 0, 0]
@@ -66,18 +69,23 @@ class Agent:
         # do in the beginning some random moves
         # in the first game half of the moves are random decreasing to zero after hundred games
         if random.random() < self.epsilon:
-            move_type = 'Exploration'
-            self.number_exploration += 1
-            move = random.randint(0, 3)
-            final_move[move] = 1
+            move, move_type = self._explore_next_move()
         else:
-            move_type = 'Exploitation'
-            self.number_exploitation += 1
-            state0 = torch.tensor(state, dtype=torch.float)
-            prediction = self.model(state0)
-            move = torch.argmax(prediction).item()
-            final_move[move] = 1
+            move, move_type = self._exploit_next_move(state)
+        final_move[move] = 1
         return final_move, move_type
+
+    def _explore_next_move(self):
+        move_type = 'Exploration'
+        self.number_exploration += 1
+        move = random.randint(0, 3)
+        return move, move_type
+
+    def _exploit_next_move(self, state):
+        move_type = 'Exploitation'
+        self.number_exploitation += 1
+        move = self.model.predict(state)
+        return move, move_type
 
 class Graph:
     plot_scores = []
@@ -95,6 +103,50 @@ class Graph:
         if DRAW_GRAPH:
             plot(self.plot_scores, self.plot_mean_scores) #, self.plot_moving_average)
 
+class Logger:
+    graph = Graph()
+    total_score = 0
+    record = 0
+
+    def __init__(self):
+        self.start = time.time()
+        now = datetime.now()
+        model_folder_path = './log'
+        if not os.path.exists(model_folder_path):
+            os.makedirs(model_folder_path)
+        file_name = os.path.join(model_folder_path, f'{now: %Y-%m-%d_%Hh%Mm%Ss}.csv')
+        self.file = open(file_name, 'w')
+
+    def log_header(self):
+        self.file.write(f'LEARNING_RATE {LEARNING_RATE}\n')
+        self.file.write(f'GAMMA {GAMMA}\n')
+        self.file.write(f'EPSILON_START {EPSILON_START}\n')
+        self.file.write(f'EPSILON_END {EPSILON_END}\n')
+        self.file.write(f'EPSILON_DECAY {EPSILON_DECAY}\n')
+        self.file.write(f'MAX_NUMBER_GAMES {MAX_NUMBER_GAMES}\n')
+        self.file.write(f'MAX_MEMORY {MAX_MEMORY}\n')
+        self.file.write(f'BATCH_SIZE {BATCH_SIZE}\n')
+        self.file.write(f'INPUT_LAYER_SIZE {INPUT_LAYER_SIZE}\n')
+        self.file.write(f'HIDDEN_LAYER_SIZE {HIDDEN_LAYER_SIZE}\n')
+        self.file.write(f'HIDDEN_LAYER_NUMBER {HIDDEN_LAYER_NUMBER}\n')
+        self.file.write(f'OUTPUT_LAYER_SIZE {OUTPUT_LAYER_SIZE}\n')
+        self.file.write('\n')
+        self.file.write('Game;Time;Score;MeanScore;Epsilon;Exploration;Exploitation\n')
+
+    def log_data(self, game_number, score, epsilon, exploration, exploitation):
+        self.total_score += score
+        if score > self.record:
+            self.record = score
+        now = time.time()
+        t = round(now - self.start)
+        mean_score = self.total_score / game_number
+        print('Game', game_number, 'Time', t, 'Score', score, 'Mean score', mean_score, 'Record', self.record, 'Epsilon', epsilon, 'Exploration', exploration, 'Exploitation', exploitation)
+        self.file.write(f'{game_number};{t};{score};{mean_score};{epsilon};{exploration};{exploitation}\n')
+        self.graph.draw(score, mean_score)
+
+    def close(self):
+        self.file.close()
+
 def calculate_reward(matrix):
     reward = 0.0
     max = np.max(matrix)
@@ -106,17 +158,20 @@ def calculate_reward(matrix):
             if (i != 0 and i != len(matrix) - 1) and (j != 0 and j != len(matrix[i]) - 1):
                 factor *= 0.9
             if matrix[i][j] > 0:
-                reward += math.log2(matrix[i][j]) / math.log2(max) # * factor
+                #reward += math.log2(matrix[i][j]) / math.log2(max) # * factor
+                reward += matrix[i][j] / max # * factor
     return reward
 
+def reset(agent, game):
+    game.reset()
+    agent.reset()
+
 def train():
-    graph = Graph()
-    total_score = 0
+    logger = Logger()
+    logger.log_header()
     record = 0
     agent = Agent()
     game = GameGrid()
-    agent.calculate_epsilon()
-    start = time.time()
     while True:
         # get old state
         state_old = agent.get_state(game)
@@ -129,13 +184,12 @@ def train():
         # perform move and get new state
         reward, reward_count_fields, reward_sum_field, reward_matrix, done, score = game.play_step(final_move)
         state_new = agent.get_state(game)
-        state_old_m = state_old.reshape(4, 4)
-        state_new_m = state_new.reshape(4, 4)
 
         if reward > 0:
-            #reward = reward_sum_field / np.max(reward_matrix)
             reward = calculate_reward(reward_matrix)
 
+        #state_old_m = state_old.reshape(4, 4)
+        #state_new_m = state_new.reshape(4, 4)
         #print ('State_old\n', state_old_m, '\nState_new\n', state_new_m, 'Move', game.key_from_action(final_move), 'Move_type', move_type, 'Reward', reward, 'Score', score, 'Done', done)
 
         # train short memory
@@ -152,22 +206,14 @@ def train():
                 record = score
                 agent.model.save()
 
-            # Plot
-            total_score += score
-            mean_score = total_score / agent.number_games
-            graph.draw(score, mean_score)
+            logger.log_data(agent.game_number, score, agent.epsilon, agent.number_exploration, agent.number_exploitation)
 
-            now = time.time()
+            reset(agent, game)
 
-            print('Game', agent.number_games, 'Time', round(now - start) , 'Score', score, 'Mean score', mean_score, 'Record', record, 'Epsilon', agent.epsilon, 'Exploration', agent.number_exploration, 'Exploitation', agent.number_exploitation)
+            if agent.game_number > MAX_NUMBER_GAMES:
+                break
 
-            game.reset()
-            agent.number_games += 1
-            agent.number_exploration = 0
-            agent.number_exploitation = 0
-            agent.calculate_epsilon()
-        if agent.number_games > MAX_NUMBER_GAMES:
-            break
+    logger.close()
 
 if __name__ == '__main__':
     train()

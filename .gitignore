@@ -11,3 +11,6 @@ __pycache__
 
 # Trained model
 model/
+
+# Logs
+log/
