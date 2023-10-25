@@ -1,15 +1,16 @@
+import math
+import os
 import random
-import numpy as np
+import time
 from collections import deque
-from puzzle import GameGrid
-from model import Linear_QNet
-from model import QTrainer
+from datetime import datetime
+
+import numpy as np
+
 import model
 from helper import plot
-import math
-import time
-from datetime import datetime
-import os
+from model import Linear_QNet, QTrainer
+from puzzle import GameGrid
 
 MAX_MEMORY = 1_000_000
 BATCH_SIZE = 10_000
@@ -19,9 +20,9 @@ GAMMA = 0.9
 
 EPSILON_START = 0.9
 EPSILON_END = 0.05
-EPSILON_DECAY = 500
+EPSILON_DECAY = 3 #_000
 
-MAX_NUMBER_GAMES = 1_000
+MAX_NUMBER_GAMES = 10 #_000
 
 DRAW_GAME = False
 DRAW_GRAPH = False
@@ -37,7 +38,7 @@ class Agent:
     def __init__(self):
         self.reset()
         self.memory = deque(maxlen=MAX_MEMORY) # popleft()
-        self.model = Linear_QNet(INPUT_LAYER_SIZE, HIDDEN_LAYER_SIZE, HIDDEN_LAYER_NUMBER, OUTPUT_LAYER_SIZE).to(model.determine_device)
+        self.model = Linear_QNet(INPUT_LAYER_SIZE, HIDDEN_LAYER_SIZE, HIDDEN_LAYER_NUMBER, OUTPUT_LAYER_SIZE).to(model.determine_device())
         self.trainer = QTrainer(self.model, lr=LEARNING_RATE, gamma=GAMMA)
 
     def get_state(self, game):
