@@ -99,6 +99,12 @@ The 2048 Python game is a clone of [yangshun/2048-python](https://github.com/yan
 The game is modified to represent the environment in the reinforcement training circle.
 It accepts actions from the agent and returns its state and a reward to the agent.
 
+### Reinforcement Learning Algorithm
+
+#### DQN
+
+#### PPO
+
 #### Play step function
 
 The play step function is the interface provided by the game (environment) to the player (agent).
