@@ -47,7 +47,7 @@ For the reward are different approaches available:
     * 4 & 4 -> 8 points
     * 2 & 2 and 4 & 4 -> 12 points
 
-3. The points are independent from the added fields.
+3. The points are independent of the added fields.
 
     Examples:
 
@@ -55,7 +55,7 @@ For the reward are different approaches available:
     * 4 & 4 -> 10 points
     * 2 & 2 and 4 & 4 -> 10 points
 
-4. The points depend from the score and the number of tiles.
+4. The points depend on the score and the number of tiles.
 
     Examples
 
@@ -67,11 +67,11 @@ The decision for now is to start with approach 2.
 
 | Outcome of an action                                                        | Game state | Reward |
 |-----------------------------------------------------------------------------|------------|-------:|
-| No change in game state (illegal move)                                      | open       | -1     |
-| No numbers were added, but game isn't over (legal move)                     | open       | -10    |
-| Two, Four or more numbers were added, but 2048 wasn't achieved (legal move) | open       | 10     |
-| No numbers were added, game over (legal move)                               | final      | -1000  |
-| Two, Four or more numbers were added, but 2048 was achieved (legal move)    | final      | 1000   |
+| No change in game state (illegal move)                                      | open       |     -1 |
+| No numbers were added, but game isn't over (legal move)                     | open       |    -10 |
+| Two, Four or more numbers were added, but 2048 wasn't achieved (legal move) | open       |     10 |
+| No numbers were added, game over (legal move)                               | final      |  -1000 |
+| Two, Four or more numbers were added, but 2048 was achieved (legal move)    | final      |   1000 |
 
 #### Random moves
 
@@ -99,6 +99,28 @@ The 2048 Python game is a clone of [yangshun/2048-python](https://github.com/yan
 The game is modified to represent the environment in the reinforcement training circle.
 It accepts actions from the agent and returns its state and a reward to the agent.
 
+### Neural Network
+
+How do I need to design my neural network to represent the problem best?
+
+#### Linear Network
+
+Bard / Gemini:
+
+> Linear network:
+>
+> While the underlying state of the 2048 game can be represented as a 16x16 matrix, processing it directly with a linear network wouldn't capture the spatial relationships between tiles, which are crucial for making optimal moves.
+> Linear networks are designed for processing vectorized data, not grid-like structures like images.
+
+#### Convolutional Networ
+
+Bard / Gemini:
+
+> Convolutional network:
+>
+> Although CNNs excel at analyzing grid-like data, the 2048 game doesn't require complex feature extraction like edge detection or texture analysis, which are CNN's strengths.
+> Using a full-fledged CNN for such a simple game might be overkill and computationally expensive.
+
 ### Reinforcement Learning Algorithm
 
 #### DQN
@@ -121,10 +143,10 @@ The Agent uses Deep Q Learning (DQN) from PyTorch library for training.
 
 The following parameter must be adjusted to achieve the expected result.
 
-| Parameter | Description | Range |
-|-----------|-------------|-------|
-| Epsilon | The randomness during the learning. At the begining it will be higher then it will decrease. | 0 < x < 1 |
-| Gamma | The gamma value describes the weight of future values. | 0 ≤ x ≤ 1 |
+| Parameter             | Description                                                                                                               | Range        |
+|-----------------------|---------------------------------------------------------------------------------------------------------------------------|--------------|
+| Epsilon               | The randomness during the learning. At the begining it will be higher then it will decrease.                              | 0 < x < 1    |
+| Gamma                 | The gamma value describes the weight of future values.                                                                    | 0 ≤ x ≤ 1    |
 | Alpha (Learning Rate) | A good learning rate it 0.001. It describes the adoption rate in the neural network. For now, it will kept as a constant. | 0.0001 - 0.1 |
 
 ##### Epsilon
@@ -172,7 +194,11 @@ At infinity it will be 0.5, which is the expected reward in a probabilistic sens
 
 ### Pre-requisites
 
-Not a pre-requisite, but a recommendation is to set up a [virtual environment](https://www.freecodecamp.org/news/how-to-setup-virtual-environments-in-python/).
+Not a pre-requisite, but a recommendation is to set up a virtual environment, see [python.org](https://docs.python.org/3/library/venv.html) or [freecodecamp.org](https://www.freecodecamp.org/news/how-to-setup-virtual-environments-in-python/).
+
+`python -m venv .venv`
+
+`. ./venv/Scripts/activate`
 
 #### Python dependencies
 
@@ -196,7 +222,9 @@ As Non-admin
 
 `python -m pip install torch torchvision matplotlib ipython`
 
-TODO: Create a requirements.txt file to make it easier.
+Create a requirements.txt file to make it easier.
+
+`pip freeze > requirements.txt`
 
 ## References
 
