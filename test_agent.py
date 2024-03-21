@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
 
+
 class AgentTestCase(unittest.TestCase):
 
     def testMatrixToArray(self):
