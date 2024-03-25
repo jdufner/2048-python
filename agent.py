@@ -1,38 +1,13 @@
-import io
+from agent_constants import *
+from collections import deque
 import logging
 import math
-import os
-import random
-import time
-from collections import deque
-from datetime import datetime
-
-import numpy as np
-
 import model
-from helper import plot
 from model import DeepQNet, QTrainer
+from my_logger import MyLogger
+import numpy as np
 from puzzle import GameGrid
-
-MAX_MEMORY = 1_000_000
-BATCH_SIZE = 10_000
-
-LEARNING_RATE = 0.01  # alpha
-GAMMA = 0.9
-
-EPSILON_START = 0.9
-EPSILON_END = 0.05
-EPSILON_DECAY = 3  # _000
-
-MAX_NUMBER_GAMES = 100  # _000
-
-DRAW_GAME = True
-DRAW_GRAPH = True
-
-INPUT_LAYER_SIZE = 16
-HIDDEN_LAYER_SIZE = 512
-HIDDEN_LAYER_NUMBER = 1
-OUTPUT_LAYER_SIZE = 4
+import random
 
 
 class Agent:
@@ -100,70 +75,6 @@ class Agent:
         return move, move_type
 
 
-class Graph:
-    plot_scores: list = []
-    plot_mean_scores: list = []
-    plot_moving_average: list = []
-    total_score: int = 0
-
-    @staticmethod
-    def moving_average(data: list, length) -> float:
-        return np.convolve(data, np.ones(length), "valid") / length
-
-    def draw(self, score, mean_score) -> None:
-        self.plot_scores.append(score)
-        self.plot_mean_scores.append(mean_score)
-        self.plot_moving_average.append(self.moving_average(self.plot_scores, 50))
-        if DRAW_GRAPH:
-            plot(self.plot_scores, self.plot_mean_scores)  # , self.plot_moving_average)
-
-
-class MyLogger:
-    graph: Graph = Graph()
-    total_score: int = 0
-    record: int = 0
-
-    def __init__(self) -> None:
-        self.start: time = time.time()
-        now: datetime = datetime.now()
-        model_folder_path: str = './logs'
-        if not os.path.exists(model_folder_path):
-            os.makedirs(model_folder_path)
-        file_name: str = os.path.join(model_folder_path, f'{now: %Y-%m-%d_%Hh%Mm%Ss}.csv')
-        self.file: io.open = open(file_name, 'w')
-
-    def log_header(self) -> None:
-        self.file.write(f'LEARNING_RATE {LEARNING_RATE}\n')
-        self.file.write(f'GAMMA {GAMMA}\n')
-        self.file.write(f'EPSILON_START {EPSILON_START}\n')
-        self.file.write(f'EPSILON_END {EPSILON_END}\n')
-        self.file.write(f'EPSILON_DECAY {EPSILON_DECAY}\n')
-        self.file.write(f'MAX_NUMBER_GAMES {MAX_NUMBER_GAMES}\n')
-        self.file.write(f'MAX_MEMORY {MAX_MEMORY}\n')
-        self.file.write(f'BATCH_SIZE {BATCH_SIZE}\n')
-        self.file.write(f'INPUT_LAYER_SIZE {INPUT_LAYER_SIZE}\n')
-        self.file.write(f'HIDDEN_LAYER_SIZE {HIDDEN_LAYER_SIZE}\n')
-        self.file.write(f'HIDDEN_LAYER_NUMBER {HIDDEN_LAYER_NUMBER}\n')
-        self.file.write(f'OUTPUT_LAYER_SIZE {OUTPUT_LAYER_SIZE}\n')
-        self.file.write('\n')
-        self.file.write('Game;Time;Score;MeanScore;Epsilon;Exploration;Exploitation\n')
-
-    def log_data(self, game_number: int, score: int, epsilon: float, exploration: int, exploitation: int) -> None:
-        self.total_score += score
-        if score > self.record:
-            self.record = score
-        now: time = time.time()
-        t: int = round(now - self.start)
-        mean_score: float = self.total_score / game_number
-        print('Game', game_number, 'Time', t, 'Score', score, 'Mean score', mean_score, 'Record', self.record,
-              'Epsilon', epsilon, 'Exploration', exploration, 'Exploitation', exploitation)
-        self.file.write(f'{game_number};{t};{score};{mean_score};{epsilon};{exploration};{exploitation}\n')
-        self.graph.draw(score, mean_score)
-
-    def close(self) -> None:
-        self.file.close()
-
-
 def calculate_reward(matrix) -> float:
     reward: float = 0.0
     max_value: int = np.max(matrix)
@@ -193,7 +104,7 @@ def train() -> None:
     game: GameGrid = GameGrid()
     while True:
         # get old state
-        state_old = agent.get_state(game)
+        state_old: list = agent.get_state(game)
         if DRAW_GAME:
             game.update()
 
@@ -201,16 +112,12 @@ def train() -> None:
         final_move, move_type = agent.get_action(state_old)
 
         # perform move and get new state
-        reward, reward_count_fields, reward_sum_field, reward_matrix, done, score = game.play_step(final_move)
-        state_new = agent.get_state(game)
+        reward, reward_count_fields, reward_sum_field, reward_matrix, done, score = game.play_step(final_move)  # type:
+        # [int, int, int, list, bool, int]
+        state_new: list = agent.get_state(game)
 
         if reward > 0:
             reward = calculate_reward(reward_matrix)
-
-        # state_old_m = state_old.reshape(4, 4)
-        # state_new_m = state_new.reshape(4, 4)
-        # print ('State_old\n', state_old_m, '\nState_new\n', state_new_m, 'Move', game.key_from_action(final_move),
-        # 'Move_type', move_type, 'Reward', reward, 'Score', score, 'Done', done)
 
         # train short memory
         agent.train_short_memory(state_old, final_move, reward, state_new, done)
@@ -221,16 +128,12 @@ def train() -> None:
         if done:
             # train long memory, plot result
             agent.train_long_memory()
-
             if score > record:
                 record = score
                 agent.model.save()
-
             my_logger.log_data(agent.game_number, score, agent.epsilon, agent.number_exploration,
                                agent.number_exploitation)
-
             reset(agent, game)
-
             if agent.game_number > MAX_NUMBER_GAMES:
                 break
 
