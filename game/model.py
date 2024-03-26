@@ -34,7 +34,7 @@ class DeepQNet(nn.Module):
         return x
     
     def save(self, file_name='model.pth') -> None:
-        model_folder_path: str = './model'
+        model_folder_path: str = '../model'
         if not os.path.exists(model_folder_path):
             os.makedirs(model_folder_path)
         file_name: str = os.path.join(model_folder_path, file_name)

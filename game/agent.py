@@ -1,12 +1,12 @@
-from agent_constants import *
 from collections import deque
+from game.agent_constants import *
+import game.model as model
+from game.model import DeepQNet, QTrainer
+from game.my_logger import MyLogger
+from game.puzzle import GameGrid
 import logging
 import math
-import model
-from model import DeepQNet, QTrainer
-from my_logger import MyLogger
 import numpy as np
-from puzzle import GameGrid
 import random
 
 

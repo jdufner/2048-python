@@ -1,4 +1,4 @@
-import logic
+import game.logic as logic
 import logging
 import unittest
 

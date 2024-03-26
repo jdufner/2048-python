@@ -1,5 +1,5 @@
-import constants as c
-import logic
+import game.constants as c
+import game.logic as logic
 import logging
 import numpy as np
 import random

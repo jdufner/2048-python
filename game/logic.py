@@ -6,7 +6,7 @@
 # Note that written answers are commented out to allow us to run your
 # code easily while grading your problem set.
 
-import constants as c
+import game.constants as c
 import logging
 import random
 
