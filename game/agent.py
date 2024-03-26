@@ -3,7 +3,7 @@ from game.agent_constants import *
 import game.model as model
 from game.model import DeepQNet, QTrainer
 from game.my_logger import MyLogger
-from game.puzzle import GameGrid
+from game.game import GameGrid
 import logging
 import math
 import numpy as np

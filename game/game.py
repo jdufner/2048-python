@@ -14,19 +14,6 @@ def gen():
     return random.randint(0, c.GRID_LEN - 1)
 
 
-def _key_from_action(action) -> str:
-    logging.debug(f'array {action} has max at index {np.argmax(action)}')
-    if np.array_equal(action, [1, 0, 0, 0]):
-        key = c.KEY_RIGHT
-    elif np.array_equal(action, [0, 1, 0, 0]):
-        key = c.KEY_DOWN
-    elif np.array_equal(action, [0, 0, 1, 0]):
-        key = c.KEY_LEFT
-    else:
-        key = c.KEY_UP
-    return key
-
-
 class GameGrid(Frame):
     matrix: list
     done: bool
@@ -123,10 +110,13 @@ class GameGrid(Frame):
             self.reward = 0
             self.matrix, done, self.reward_count_fields, self.reward_sum_field, self.reward_matrix = (
                 self.commands[key](self.matrix))
+            logging.debug(f'matrix = {self.matrix}, reward_count_field = {self.reward_count_fields}, '
+                          f'reward_sum_field = {self.reward_sum_field}, reward_matrix = {self.reward_matrix}')
             if self.reward_count_fields > 0:
                 self.reward = self.reward_count_fields
             if done:
-                if len(self.history_matrices) > 0 and self.matrix == self.history_matrices[len(self.history_matrices) - 1]:
+                if (len(self.history_matrices) > 0 and
+                        self.matrix == self.history_matrices[len(self.history_matrices) - 1]):
                     self.reward = -1
                 self.matrix = logic.add_two(self.matrix)
                 # record last move
@@ -152,12 +142,36 @@ class GameGrid(Frame):
         self.matrix[index[0]][index[1]] = 2
 
     # Extension for Reinforcement Learning
-    # must return reward, done, score
+    # Returns reward, reward_count_fields, reward_sum_field, reward_matrix, done, score
+    #  .  .  .  .        .  .  .  .
+    #  .  .  .  .  --\   .  .  .  .
+    #  .  .  .  2  --/   .  .  .  .
+    #  .  .  .  2        .  .  .  4
+    # reward: some specific values
+    # reward_count_field: the number of fields that have been merged
+    # reward_sum_field: the sum of fields that have been merged
+    # reward_matrix: a matrix of fields that have been merged
+    # done
+    # score
     def play_step(self, action) -> tuple[int, int, int, list, bool, int]:
-        key: str = _key_from_action(action)
+        key: str = self._key_from_action(action)
         self._key_down(key)
         score: int = logic.calculate_score(self.matrix)
         return self.reward, self.reward_count_fields, self.reward_sum_field, self.reward_matrix, self.done, score
+
+    # Extension for Reinforcement Learning
+    @staticmethod
+    def _key_from_action(action) -> str:
+        logging.debug(f'array {action} has max at index {np.argmax(action)}')
+        if np.array_equal(action, [1, 0, 0, 0]):
+            key = c.KEY_RIGHT
+        elif np.array_equal(action, [0, 1, 0, 0]):
+            key = c.KEY_DOWN
+        elif np.array_equal(action, [0, 0, 1, 0]):
+            key = c.KEY_LEFT
+        else:
+            key = c.KEY_UP
+        return key
 
     # Extension for Reinforcement Learning
     def reset(self) -> None:
@@ -172,9 +186,11 @@ class GameGrid(Frame):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(filename='./logs/puzzle.logs', encoding='utf-8',
+    logging.basicConfig(#filename='../logs/puzzle.logs',
+                        encoding='utf-8',
                         format='%(asctime)s,%(msecs)-3d - %(levelname)-8s - %(filename)s:%(lineno)d - '
                                '%(module)s - %(funcName)s - %(message)s',
-                        datefmt='%Y-%m-%d %H:%M:%S', level=logging.INFO)
+                        datefmt='%Y-%m-%d %H:%M:%S',
+                        level=logging.DEBUG)
     REINFORCEMENT_LEARNING_MODE = False
     game_grid = GameGrid()
