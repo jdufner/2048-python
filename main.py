@@ -1,5 +1,5 @@
 import logging
-from game.agent import train
+from rl.agent import train
 
 if __name__ == '__main__':
     logging.basicConfig(filename='./logs/agent.logs', encoding='utf-8',

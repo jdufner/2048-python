@@ -12,7 +12,6 @@ from torch.optim import Optimizer
 def determine_device() -> torch.device:
     # if GPU is to be used
     device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    # device = "cpu"
     return device
 
 
