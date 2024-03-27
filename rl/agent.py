@@ -1,4 +1,5 @@
 from collections import deque
+from datetime import datetime
 from rl.agent_constants import *
 import rl.model as model
 from rl.model import DeepQNet, QTrainer
@@ -99,32 +100,31 @@ def reset(agent, game) -> None:
 def train() -> None:
     my_logger: MyLogger = MyLogger()
     my_logger.log_header()
-    record: int = 0
     agent: Agent = Agent()
     game: GameGrid = GameGrid()
+    record: int = 0
+    epoch: int = 0
     while True:
+        epoch += 1
         # get old state
         state_old: list = agent.get_state(game)
+        logging.debug(f'game: {agent.game_number}, epoch: {epoch}, state_old: {game.matrix}')
         if DRAW_GAME:
             game.update()
-
         # get move
         final_move, move_type = agent.get_action(state_old)
-
+        logging.debug(f'game: {agent.game_number}, epoch: {epoch}, move: {final_move}, type: {move_type}')
         # perform move and get new state
         reward, reward_count_fields, reward_sum_field, reward_matrix, done, score = game.play_step(final_move)  # type:
         # [int, int, int, list, bool, int]
+        # if reward > 0:
+        #     reward = calculate_reward(reward_matrix)
         state_new: list = agent.get_state(game)
-
-        if reward > 0:
-            reward = calculate_reward(reward_matrix)
-
+        logging.debug(f'game: {agent.game_number}, epoch: {epoch}, state_new: {game.matrix}')
         # train short memory
         agent.train_short_memory(state_old, final_move, reward, state_new, done)
-
         # remember
         agent.remember(state_old, final_move, reward, state_new, done)
-
         if done:
             # train long memory, plot result
             agent.train_long_memory()
@@ -136,12 +136,13 @@ def train() -> None:
             reset(agent, game)
             if agent.game_number > MAX_NUMBER_GAMES:
                 break
-
     my_logger.close()
 
 
 if __name__ == '__main__':
-    logging.basicConfig(filename='./logs/agent.logs', encoding='utf-8',
+    now: datetime = datetime.now()
+    logging.basicConfig(filename=f'./logs/{now: %Y-%m-%d_%Hh%Mm%Ss}_agent.log',
+                        encoding='utf-8',
                         format='%(asctime)s,%(msecs)-3d - %(levelname)-8s - %(filename)s:%(lineno)d - '
                                '%(module)s - %(funcName)s - %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S', level=logging.DEBUG)

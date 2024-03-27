@@ -1,3 +1,4 @@
+from datetime import datetime
 import game.constants as c
 import game.logic as logic
 import logging
@@ -114,6 +115,8 @@ class GameGrid(Frame):
                           f'reward_sum_field = {self.reward_sum_field}, reward_matrix = {self.reward_matrix}')
             if self.reward_count_fields > 0:
                 self.reward = self.reward_count_fields
+            else:
+                self.reward = -1
             if done:
                 if (len(self.history_matrices) > 0 and
                         self.matrix == self.history_matrices[len(self.history_matrices) - 1]):
@@ -143,20 +146,36 @@ class GameGrid(Frame):
 
     # Extension for Reinforcement Learning
     # Returns reward, reward_count_fields, reward_sum_field, reward_matrix, done, score
-    #  .  .  .  .        .  .  .  .
-    #  .  .  .  .  --\   .  .  .  .
-    #  .  .  .  2  --/   .  .  .  .
-    #  .  .  .  2        .  .  .  4
-    # reward: some specific values
+    # reward: -1 if no field(s) merged, else reward_count_field, else on loose -10,000, else on win 10,000
     # reward_count_field: the number of fields that have been merged
     # reward_sum_field: the sum of fields that have been merged
     # reward_matrix: a matrix of fields that have been merged
-    # done
-    # score
+    # done: True if all field filled and no move possible
+    # score: the sum of all fields
+    #
+    # Example
+    #  .  .  .  .        .  .  .  .
+    #  .  .  .  .  --\   .  .  .  .
+    #  .  .  .  4  --/   .  .  .  .
+    #  .  .  2  4        .  .  2  8
+    #
+    # reward: 1
+    # reward_count_field: 1
+    # reward_sum_field: 8
+    # reward_matrix:  .  .  .  .
+    #                 .  .  .  .
+    #                 .  .  .  .
+    #                 .  .  .  8
+    # done: False
+    # score: 10
     def play_step(self, action) -> tuple[int, int, int, list, bool, int]:
         key: str = self._key_from_action(action)
         self._key_down(key)
         score: int = logic.calculate_score(self.matrix)
+        logging.debug(f'matrix = {self.matrix}, reward = {self.reward}, '
+                      f'reward_count_field = {self.reward_count_fields}, '
+                      f'reward_sum_field = {self.reward_sum_field}, reward_matrix = {self.reward_matrix}, '
+                      f'done = {self.done}, score = {score}')
         return self.reward, self.reward_count_fields, self.reward_sum_field, self.reward_matrix, self.done, score
 
     # Extension for Reinforcement Learning
@@ -186,7 +205,8 @@ class GameGrid(Frame):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(#filename='../logs/puzzle.logs',
+    now: datetime = datetime.now()
+    logging.basicConfig(filename=f'../logs/{now: %Y-%m-%d_%Hh%Mm%Ss}_game.logs',
                         encoding='utf-8',
                         format='%(asctime)s,%(msecs)-3d - %(levelname)-8s - %(filename)s:%(lineno)d - '
                                '%(module)s - %(funcName)s - %(message)s',
