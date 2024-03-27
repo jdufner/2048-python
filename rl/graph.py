@@ -1,4 +1,4 @@
-from game.agent_constants import DRAW_GRAPH
+from rl.agent_constants import DRAW_GRAPH
 from IPython import display
 import matplotlib.pyplot as plt
 import numpy as np

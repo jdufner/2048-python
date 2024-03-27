@@ -1,9 +1,9 @@
 from collections import deque
-from game.agent_constants import *
-import game.model as model
-from game.model import DeepQNet, QTrainer
-from game.my_logger import MyLogger
-from game.game import GameGrid
+from rl.agent_constants import *
+import rl.model as model
+from rl.model import DeepQNet, QTrainer
+from rl.my_logger import MyLogger
+from game.game_grid import GameGrid
 import logging
 import math
 import numpy as np

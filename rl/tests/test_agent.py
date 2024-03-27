@@ -1,5 +1,5 @@
-import unittest
 import numpy as np
+import unittest
 
 
 class AgentTestCase(unittest.TestCase):
@@ -13,14 +13,15 @@ class AgentTestCase(unittest.TestCase):
         self.assertEqual(9, array[8])
 
     def testMatrixEqual(self):
-        matrixA = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-        matrixB = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-        self.assertEqual(matrixA, matrixB)
+        matrix_a = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+        matrix_b = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+        self.assertEqual(matrix_a, matrix_b)
 
     def testMatrixNotEqual(self):
-        matrixA = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-        matrixB = [[1, 2, 3], [4, 5, 6], [7, 8, 10]]
-        self.assertNotEqual(matrixA, matrixB)
+        matrix_a = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+        matrix_b = [[1, 2, 3], [4, 5, 6], [7, 8, 10]]
+        self.assertNotEqual(matrix_a, matrix_b)
+
 
 if __name__ == '__main__':
     unittest.main()
