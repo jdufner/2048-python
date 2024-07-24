@@ -47,7 +47,7 @@ For the reward are different approaches available:
     * 4 & 4 -> 8 points
     * 2 & 2 and 4 & 4 -> 12 points
 
-3. The points are independent from the added fields.
+3. The points are independent of the added fields.
 
     Examples:
 
@@ -55,7 +55,7 @@ For the reward are different approaches available:
     * 4 & 4 -> 10 points
     * 2 & 2 and 4 & 4 -> 10 points
 
-4. The points depend from the score and the number of tiles.
+4. The points depend on the score and the number of tiles.
 
     Examples
 
@@ -67,11 +67,11 @@ The decision for now is to start with approach 2.
 
 | Outcome of an action                                                        | Game state | Reward |
 |-----------------------------------------------------------------------------|------------|-------:|
-| No change in game state (illegal move)                                      | open       | -1     |
-| No numbers were added, but game isn't over (legal move)                     | open       | -10    |
-| Two, Four or more numbers were added, but 2048 wasn't achieved (legal move) | open       | 10     |
-| No numbers were added, game over (legal move)                               | final      | -1000  |
-| Two, Four or more numbers were added, but 2048 was achieved (legal move)    | final      | 1000   |
+| No change in game state (illegal move)                                      | open       |     -1 |
+| No numbers were added, but game isn't over (legal move)                     | open       |    -10 |
+| Two, Four or more numbers were added, but 2048 wasn't achieved (legal move) | open       |     10 |
+| No numbers were added, game over (legal move)                               | final      |  -1000 |
+| Two, Four or more numbers were added, but 2048 was achieved (legal move)    | final      |   1000 |
 
 #### Random moves
 
@@ -115,10 +115,10 @@ The Agent uses Deep Q Learning (DQN) from PyTorch library for training.
 
 The following parameter must be adjusted to achieve the expected result.
 
-| Parameter | Description | Range |
-|-----------|-------------|-------|
-| Epsilon | The randomness during the learning. At the begining it will be higher then it will decrease. | 0 < x < 1 |
-| Gamma | The gamma value describes the weight of future values. | 0 ≤ x ≤ 1 |
+| Parameter             | Description                                                                                                               | Range        |
+|-----------------------|---------------------------------------------------------------------------------------------------------------------------|--------------|
+| Epsilon               | The randomness during the learning. At the begining it will be higher then it will decrease.                              | 0 < x < 1    |
+| Gamma                 | The gamma value describes the weight of future values.                                                                    | 0 ≤ x ≤ 1    |
 | Alpha (Learning Rate) | A good learning rate it 0.001. It describes the adoption rate in the neural network. For now, it will kept as a constant. | 0.0001 - 0.1 |
 
 ##### Epsilon

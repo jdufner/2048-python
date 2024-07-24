@@ -130,7 +130,8 @@ def train() -> None:
             agent.train_long_memory()
             if score > record:
                 record = score
-                agent.model.save()
+                # Why save() without load()?
+                # agent.model.save()
             my_logger.log_data(agent.game_number, score, agent.epsilon, agent.number_exploration,
                                agent.number_exploitation)
             reset(agent, game)

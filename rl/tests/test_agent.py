@@ -6,9 +6,9 @@ class AgentTestCase(unittest.TestCase):
 
     def testMatrixToArray(self):
         matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-        #print(matrix)
+        # print(matrix)
         array = np.asanyarray(matrix).ravel()
-        #print(array)
+        # print(array)
         self.assertEqual(1, array[0])
         self.assertEqual(9, array[8])
 

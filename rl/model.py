@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 import os
 import torch
@@ -40,7 +42,7 @@ class DeepQNet(nn.Module):
         torch.save(self.state_dict(), file_name)
 
     def predict(self, state):
-        state: np.array = np.array(state)
+        # state: np.array = np.array(state)
         state0: Tensor = torch.tensor(state, dtype=torch.float, device=self.device)
         prediction: Tensor = self(state0)
         move: int = torch.argmax(prediction).item()
@@ -56,13 +58,14 @@ class QTrainer:
         self.criterion: MSELoss = nn.MSELoss().to(self.model.device)
 
     def train_step(self, state: list, action: Tensor, reward: float, next_state: list, done: bool) -> None:
-        state_a = np.array(state)
-        state_t: Tensor = torch.tensor(state_a, dtype=torch.float, device=self.model.device)
+        # state_a = np.array(state)
+        state_t: Tensor = torch.tensor(state, dtype=torch.float, device=self.model.device)
         action: Tensor = torch.tensor(action, dtype=torch.long, device=self.model.device)
         reward: Tensor = torch.tensor(reward, dtype=torch.float, device=self.model.device)
-        next_state_a = np.array(next_state)
-        next_state_t: Tensor = torch.tensor(next_state_a, dtype=torch.float, device=self.model.device)
+        # next_state_a = np.array(next_state)
+        next_state_t: Tensor = torch.tensor(next_state, dtype=torch.float, device=self.model.device)
 
+        # State must be a 1-dimensional tensor
         if len(state_t.shape) == 1:
             # (1, x)
             state_t = torch.unsqueeze(state_t, 0)  # .to(self.model.device)
@@ -70,6 +73,8 @@ class QTrainer:
             reward = torch.unsqueeze(reward, 0)  # .to(self.model.device)
             next_state_t = torch.unsqueeze(next_state_t, 0)  # .to(self.model.device)
             done = (done, )
+        else:
+            logging.debug(f'state_t.shape = {state_t.shape}')
 
         # 1: predicted Q values with current state
         prediction: Tensor = self.model(state_t)
