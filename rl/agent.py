@@ -20,15 +20,18 @@ class Agent:
     def __init__(self) -> None:
         self.reset()
         self.memory = deque(maxlen=MAX_MEMORY)  # popleft()
-        self.model = (DeepQNet(INPUT_LAYER_SIZE, HIDDEN_LAYER_SIZE, HIDDEN_LAYER_NUMBER, OUTPUT_LAYER_SIZE)
+        self.model = (DeepQNet(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE)
                       .to(model.determine_device()))
         self.trainer = QTrainer(self.model, lr=LEARNING_RATE, gamma=GAMMA)
 
     @staticmethod
-    def get_state(game) -> np.array:
-        #  Better approach
-        #  state: np.array = np.array(np.ravel(game.matrix), dtype=int)
-        return np.array(np.ravel(game.matrix), dtype=int)
+    def get_state(game) -> list:
+        # Better approach
+        # state: np.array = np.array(np.ravel(game.matrix), dtype=int)
+        # return a 2d matrix
+        return game.matrix
+        # returns a flattened game.matrix
+        # return np.array(np.ravel(game.matrix), dtype=int)
 
     def remember(self, state, action, reward, next_state, done) -> None:
         self.memory.append((state, action, reward, next_state, done))

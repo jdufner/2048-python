@@ -18,22 +18,24 @@ def determine_device() -> torch.device:
 
 
 class DeepQNet(nn.Module):
-    def __init__(self, input_size, hidden_size, hidden_number, output_size) -> None:
+    def __init__(self, input_size, output_size) -> None:
         super().__init__()
         self.device: torch.device = determine_device()
-        self.input_layer: nn.Linear = nn.Linear(input_size, hidden_size, dtype=torch.float, device=self.device)
-        self.hidden_layers: list = []
-        for i in range(hidden_number - 1):  # type: int
-            self.hidden_layers.append(nn.Linear(hidden_size, hidden_size, dtype=torch.float, device=self.device))
-        self.output_layer: nn.Linear = nn.Linear(hidden_size, output_size, dtype=torch.float, device=self.device)
+        self.input_layer: nn.Conv2d = nn.Conv2d(1, 10, 2, 1, 1, dtype=torch.float, device=self.device)
+        self.act = nn.ReLU()
+        self.flat = nn.Flatten(start_dim=0, end_dim=-1)
+        self.output_layer: nn.Linear = nn.Linear(250, output_size, dtype=torch.float, device=self.device)
 
     def forward(self, x) -> torch.Tensor:
-        x: Tensor = F.relu(self.input_layer(x)).to(self.device)
-        for hidden_layer in self.hidden_layers:  # type: nn.Linear
-            x = F.relu(hidden_layer(x)).to(self.device)
+        x: Tensor = self.input_layer(x).to(self.device)
+        logging.info(f'conv2d = {x.size()}')
+        x: Tensor = self.act(x).to(self.device)
+        logging.info(f'relu = {x.size()}')
+        x: Tensor = self.flat(x).to(self.device)
+        logging.info(f'flat = {x.size()}')
         x = self.output_layer(x).to(self.device)
         return x
-    
+
     def save(self, file_name='model.pth') -> None:
         model_folder_path: str = '../model'
         if not os.path.exists(model_folder_path):
@@ -44,6 +46,7 @@ class DeepQNet(nn.Module):
     def predict(self, state):
         # state: np.array = np.array(state)
         state0: Tensor = torch.tensor(state, dtype=torch.float, device=self.device)
+        state0 = torch.unsqueeze(state0, 0)
         prediction: Tensor = self(state0)
         move: int = torch.argmax(prediction).item()
         return move
@@ -66,17 +69,18 @@ class QTrainer:
         next_state_t: Tensor = torch.tensor(next_state, dtype=torch.float, device=self.model.device)
 
         # State must be a 1-dimensional tensor
-        if len(state_t.shape) == 1:
-            # (1, x)
-            state_t = torch.unsqueeze(state_t, 0)  # .to(self.model.device)
-            action = torch.unsqueeze(action, 0)  # .to(self.model.device)
-            reward = torch.unsqueeze(reward, 0)  # .to(self.model.device)
-            next_state_t = torch.unsqueeze(next_state_t, 0)  # .to(self.model.device)
-            done = (done, )
-        else:
-            logging.debug(f'state_t.shape = {state_t.shape}')
+        # if len(state_t.shape) == 1:
+        #     # (1, x)
+        #     state_t = torch.unsqueeze(state_t, 0)  # .to(self.model.device)
+        #     action = torch.unsqueeze(action, 0)  # .to(self.model.device)
+        #     reward = torch.unsqueeze(reward, 0)  # .to(self.model.device)
+        #     next_state_t = torch.unsqueeze(next_state_t, 0)  # .to(self.model.device)
+        #     done = (done,)
+        # else:
+        #     logging.debug(f'state_t.shape = {state_t.shape}')
 
         # 1: predicted Q values with current state
+        state_t = torch.unsqueeze(state_t, 0)
         prediction: Tensor = self.model(state_t)
         target: Tensor = prediction.clone()
         for idx in range(len(done)):  # type: int
