@@ -20,9 +20,9 @@ class Agent:
     def __init__(self) -> None:
         self.reset()
         self.memory = deque(maxlen=MAX_MEMORY)  # popleft()
-        self.model = (DeepQNet(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE)
-                      .to(model.determine_device()))
-        self.trainer = QTrainer(self.model, lr=LEARNING_RATE, gamma=GAMMA)
+        self.model: DeepQNet = (DeepQNet(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE)
+                                .to(model.determine_device()))
+        self.trainer: QTrainer = QTrainer(self.model, lr=LEARNING_RATE, gamma=GAMMA)
 
     @staticmethod
     def get_state(game) -> list:
