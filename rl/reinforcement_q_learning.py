@@ -75,10 +75,13 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 
-#env = gym.make("CartPole-v1")
-#env = gym.make("CartPole-v1", render_mode="human")
-env = gym.make("LunarLander-v3")
-#env = gym.make("LunarLander-v3", render_mode="human")
+from game.environment import Environment
+
+# env = gym.make("CartPole-v1")
+# env = gym.make("CartPole-v1", render_mode="human")
+# env = gym.make("LunarLander-v3")
+# env = gym.make("LunarLander-v3", render_mode="human")
+env = Environment()
 
 # set up matplotlib
 is_ipython = 'inline' in matplotlib.get_backend()
@@ -264,11 +267,12 @@ EPS_DECAY = 1000
 TAU = 0.005
 LR = 1e-4
 
-# Get number of actions from gym action space
+# Get number of actions from gym action spac
 n_actions = env.action_space.n
 # Get the number of state observations
-state, info = env.reset()
-n_observations = len(state)
+# state, info = env.reset()
+state = env.reset()
+n_observations = 16  # len(state)
 
 policy_net = DQN(n_observations, n_actions).to(device)
 target_net = DQN(n_observations, n_actions).to(device)

@@ -169,7 +169,7 @@ class GameGrid(Frame):
     # done: False
     # score: 10
     def play_step(self, action) -> tuple[int, int, int, list, bool, int]:
-        key: str = self._key_from_action(action)
+        key: str = self._key_from_actionindex(action)
         self._key_down(key)
         score: int = logic.calculate_score(self.matrix)
         logging.debug(f'matrix = {self.matrix}, reward = {self.reward}, '
@@ -180,13 +180,25 @@ class GameGrid(Frame):
 
     # Extension for Reinforcement Learning
     @staticmethod
-    def _key_from_action(action) -> str:
+    def _key_from_actionarray(action) -> str:
         logging.debug(f'array {action} has max at index {np.argmax(action)}')
         if np.array_equal(action, [1, 0, 0, 0]):
             key = c.KEY_RIGHT
         elif np.array_equal(action, [0, 1, 0, 0]):
             key = c.KEY_DOWN
         elif np.array_equal(action, [0, 0, 1, 0]):
+            key = c.KEY_LEFT
+        else:
+            key = c.KEY_UP
+        return key
+
+    @staticmethod
+    def _key_from_actionindex(action) -> str:
+        if 0 == action:
+            key = c.KEY_RIGHT
+        elif 1 == action:
+            key = c.KEY_DOWN
+        elif 2 == action:
             key = c.KEY_LEFT
         else:
             key = c.KEY_UP
