@@ -218,9 +218,11 @@ class DQN(nn.Module):
 
     def __init__(self, n_observations, n_actions):
         super(DQN, self).__init__()
-        self.layer1 = nn.Linear(n_observations, 128)
-        self.layer2 = nn.Linear(128, 128)
-        self.layer3 = nn.Linear(128, n_actions)
+        # hidden_layer_size = 128
+        hidden_layer_size = 256
+        self.layer1 = nn.Linear(n_observations, hidden_layer_size)
+        self.layer2 = nn.Linear(hidden_layer_size, hidden_layer_size)
+        self.layer3 = nn.Linear(hidden_layer_size, n_actions)
 
     # Called with either one element to determine next action, or a batch
     # during optimization. Returns tensor([[left0exp,right0exp]...]).
@@ -270,9 +272,8 @@ LR = 1e-4
 # Get number of actions from gym action spac
 n_actions = env.action_space.n
 # Get the number of state observations
-# state, info = env.reset()
-state = env.reset()
-n_observations = 16  # len(state)
+state, info = env.reset()
+n_observations = len(state)
 
 policy_net = DQN(n_observations, n_actions).to(device)
 target_net = DQN(n_observations, n_actions).to(device)
@@ -413,7 +414,8 @@ def optimize_model():
 if torch.cuda.is_available() or torch.backends.mps.is_available():
     num_episodes = 600
 else:
-    num_episodes = 50
+    # num_episodes = 50
+    num_episodes = 5000
 
 for i_episode in range(num_episodes):
     # Initialize the environment and get its state
