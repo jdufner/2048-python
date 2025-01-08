@@ -17,7 +17,7 @@ def gen():
 
 class GameGrid(Frame):
     matrix: list
-    done: bool
+    done: bool = False
     reward_count_fields: int
     reward_sum_field: int
     reward_matrix: list
@@ -33,25 +33,18 @@ class GameGrid(Frame):
             c.KEY_DOWN: logic.down,
             c.KEY_LEFT: logic.left,
             c.KEY_RIGHT: logic.right,
-            c.KEY_UP_ALT1: logic.up,
-            c.KEY_DOWN_ALT1: logic.down,
-            c.KEY_LEFT_ALT1: logic.left,
-            c.KEY_RIGHT_ALT1: logic.right,
-            c.KEY_UP_ALT2: logic.up,
-            c.KEY_DOWN_ALT2: logic.down,
-            c.KEY_LEFT_ALT2: logic.left,
-            c.KEY_RIGHT_ALT2: logic.right,
+            # c.KEY_BACK: self._key_down(c.KEY_BACK),
         }
         self.grid_cells = []
-        self.init_grid()
+        self._init_grid()
         self.reset()
-        self.update_grid_cells()
+        self._update_grid_cells()
 
         # Remove comment from next line and run this file.
         if not REINFORCEMENT_LEARNING_MODE:
             self.mainloop()
 
-    def init_grid(self) -> None:
+    def _init_grid(self) -> None:
         background: Frame = Frame(self, bg=c.BACKGROUND_COLOR_GAME, width=c.SIZE, height=c.SIZE)
         background.grid()
         for i in range(c.GRID_LEN):  # type: int
@@ -81,7 +74,7 @@ class GameGrid(Frame):
                 grid_row.append(t)
             self.grid_cells.append(grid_row)
 
-    def update_grid_cells(self) -> None:
+    def _update_grid_cells(self) -> None:
         for i in range(c.GRID_LEN):  # type: int
             for j in range(c.GRID_LEN):  # type: int
                 new_number: int = self.matrix[i][j]
@@ -105,7 +98,7 @@ class GameGrid(Frame):
             exit()
         if key == c.KEY_BACK and len(self.history_matrices) > 1:
             self.matrix = self.history_matrices.pop()
-            self.update_grid_cells()
+            self._update_grid_cells()
             logging.info(f'back on step total step: {len(self.history_matrices)}')
         elif key in self.commands:
             self.reward = 0
@@ -124,13 +117,13 @@ class GameGrid(Frame):
                 self.matrix = logic.add_two(self.matrix)
                 # record last move
                 self.history_matrices.append(self.matrix)
-                self.update_grid_cells()
-                if logic.game_state(self.matrix) == 'win':
+                self._update_grid_cells()
+                if logic.game_state(self.matrix) == logic.WIN:
                     self.grid_cells[1][1].configure(text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
                     self.grid_cells[1][2].configure(text="Win!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
                     self.reward = 10_000
                     self.done = True
-                if logic.game_state(self.matrix) == 'lose':
+                if logic.game_state(self.matrix) == logic.LOSE:
                     self.grid_cells[1][1].configure(text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
                     self.grid_cells[1][2].configure(text="Lose!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
                     self.reward = -10_000
@@ -168,7 +161,7 @@ class GameGrid(Frame):
     #                 .  .  .  8
     # done: False
     # score: 10
-    def play_step(self, action) -> tuple[int, int, int, list, bool, int]:
+    def play_step(self, action) -> tuple[int, int, int, list, bool, bool, int]:
         key: str = self._key_from_actionindex(action)
         self._key_down(key)
         score: int = logic.calculate_score(self.matrix)
@@ -176,7 +169,7 @@ class GameGrid(Frame):
                       f'reward_count_field = {self.reward_count_fields}, '
                       f'reward_sum_field = {self.reward_sum_field}, reward_matrix = {self.reward_matrix}, '
                       f'done = {self.done}, score = {score}')
-        return self.reward, self.reward_count_fields, self.reward_sum_field, self.reward_matrix, self.done, score
+        return self.reward, self.reward_count_fields, self.reward_sum_field, self.reward_matrix, self.done, self.done, score
 
     # Extension for Reinforcement Learning
     @staticmethod
@@ -213,7 +206,7 @@ class GameGrid(Frame):
         self.reward_sum_field = 0
         self.reward_matrix = []
         self.history_matrices = []
-        self.update_grid_cells()
+        self._update_grid_cells()
 
 
 if __name__ == '__main__':
