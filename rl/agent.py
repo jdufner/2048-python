@@ -115,7 +115,7 @@ def train() -> None:
         final_move, move_type = agent.get_action(state_old)
         logging.debug(f'game: {agent.game_number}, epoch: {epoch}, move: {final_move}, type: {move_type}')
         # perform move and get new state
-        reward, reward_count_fields, reward_sum_field, reward_matrix, done, score = game.play_step(final_move)  # type:
+        reward, reward_count_fields, reward_sum_field, reward_matrix, reward_fields, done, truncated, score = game.play_step(final_move)  # type:
         # [int, int, int, list, bool, int]
         # if reward > 0:
         #     reward = calculate_reward(reward_matrix)

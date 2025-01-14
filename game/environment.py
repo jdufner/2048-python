@@ -35,8 +35,8 @@ class Environment:
             self.game.reset()
             return self.flatten(self.game.matrix), False
 
-    def step(self, action) -> (list, ):
-        reward, reward_count_fields, reward_sum_field, reward_matrix, terminated, truncated, score = self.game.play_step(action)
+    def step(self, action) -> (list, int, bool, bool, bool):
+        reward, reward_count_fields, reward_sum_field, reward_matrix, reward_fields, terminated, truncated, score = self.game.play_step(action)
         # returns observation, reward, terminated, truncated, info
         return self.flatten(self.game.matrix), reward_sum_field, terminated, truncated, False
 

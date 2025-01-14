@@ -37,41 +37,49 @@ For the reward are different approaches available:
 
     * 2 & 2 -> 1 point
     * 4 & 4 -> 1 point
+    * 64 & 64 -> 1 point
     * 2 & 2 and 4 & 4 -> 2 points
 
 2. The points are the sum of the added fields.
+
+    a. The points can be added as is.
 
     Examples:
 
     * 2 & 2 -> 4 points
     * 4 & 4 -> 8 points
+    * 64 & 64 -> 128 points
     * 2 & 2 and 4 & 4 -> 12 points
 
-3. The points are independent of the added fields.
+    b. The points can be added as log~2~.
 
     Examples:
+    
+    * 2 & 2 -> 2 points
+    * 4 & 4 -> 4 points
+    * 64 & 64 -> 12 points
+    * 2 & 2 and 4 & 4 -> 6 points
 
-    * 2 & 2 -> 10 points
-    * 4 & 4 -> 10 points
-    * 2 & 2 and 4 & 4 -> 10 points
+The decision for now is to start with approach 2a.
 
-4. The points depend on the score and the number of tiles.
+Additionally, we could add a discount factor for the position.
 
-    Examples
+|   | 0   | 1   | 2   | 3   |
+|---|-----|-----|-----|-----|
+| 0 | 1.0 | 0.9 | 0.9 | 1.0 |
+| 1 | 0.9 | 0.8 | 0.8 | 0.9 |
+| 2 | 0.9 | 0.8 | 0.8 | 0.9 |
+| 3 | 1.0 | 0.9 | 0.9 | 1.0 |
 
-    * 2x 2 on the board -> Score = 4, Tiles = 2 -> 4/2 = 2 points
-    * 1x 2 and 1x 4 on the board -> Score = 6, Tiles = 2 -> 6/2 = 3 points
-    * 1x 2, 1x 4 and 1x 8 on the board -> Score = 14, Tiles = 3 -> 14/3 = 4,7 points
 
-The decision for now is to start with approach 2.
 
-| Outcome of an action                                                        | Game state | Reward |
-|-----------------------------------------------------------------------------|------------|-------:|
-| No change in game state (illegal move)                                      | open       |     -1 |
-| No numbers were added, but game isn't over (legal move)                     | open       |    -10 |
-| Two, Four or more numbers were added, but 2048 wasn't achieved (legal move) | open       |     10 |
-| No numbers were added, game over (legal move)                               | final      |  -1000 |
-| Two, Four or more numbers were added, but 2048 was achieved (legal move)    | final      |   1000 |
+| Outcome of an action                                                        | Game state |   Reward |
+|-----------------------------------------------------------------------------|------------|---------:|
+| No change in game state (illegal move)                                      | open       |       -1 |
+| No numbers were added, but game isn't over (legal move)                     | open       |        0 |
+| Two, Four or more numbers were added, but 2048 wasn't achieved (legal move) | open       |  <value> |
+| No numbers were added, game over (legal move)                               | final      | -100,000 |
+| Two, Four or more numbers were added, but 2048 was achieved (legal move)    | final      |  100,000 |
 
 #### Random moves
 
@@ -86,10 +94,10 @@ This is the first goal to top.
 There are four possible actions.
 Each action will be represented as a 1-dimensional array of size 4.
 
-* Up: `[1, 0, 0, 0]`
-* Right: `[0, 1, 0, 0]`
-* Down: `[0, 0, 1, 0]`
-* Left: `[0, 0, 0, 1]`
+* Right: 0 - `[0, 1, 0, 0]`
+* Down: 1 - `[0, 0, 1, 0]`
+* Left: 2 - `[0, 0, 0, 1]`
+* Up: 3 - `[1, 0, 0, 0]`
 
 ## Solution Strategy
 
@@ -99,15 +107,22 @@ The 2048 Python game is a clone of [yangshun/2048-python](https://github.com/yan
 The game is modified to represent the environment in the reinforcement training circle.
 It accepts actions from the agent and returns its state and a reward to the agent.
 
+### Neural Network
+
+#### Linear Network
+
+#### Convolutional Network
+
+### Agent
+
+The Agent uses Deep Q Learning (DQN) from PyTorch library for training.
+Maybe later I switch to advanced learning methods like PPO, AlphaZero or MuZero.
+
 #### Play step function
 
 The play step function is the interface provided by the game (environment) to the player (agent).
 
 `play_step(self, action) -> state, reward, game_over`
-
-### Agent
-
-The Agent uses Deep Q Learning (DQN) from PyTorch library for training.
 
 ### Learning strategy
 
@@ -134,7 +149,7 @@ It significantly influences the training process by determining the importance o
   This requires a very detailed reward function.
 
 * Gamma value closer to 1:
-  The model strives for long-termin high rewards.
+  The model strives for long-term high rewards.
 
 If it is equal to one, the agent values future reward JUST AS MUCH as current reward.
 This means, in ten actions, if an agent does something good this is JUST AS VALUABLE as doing this action directly.
@@ -162,6 +177,22 @@ However, if everytime you decrease your alpha by 50 percent, you get values like
 Your Q-values will end up being, 1,0.5,0.75,0.9,0.8,.... And will eventually converge kind of close to 0.5.
 At infinity it will be 0.5, which is the expected reward in a probabilistic sense.
 
+### Results
+
+As described two different neural networks have been used:
+
+1. Linear Network
+2. Convolutional Network
+
+There was no training success with the Linear Network after 10,000 games.
+Therefore, I decided to move to a Convolutional Network.
+
+#### Linear Network
+
+TODO: list one or more training examples
+
+#### Convolutional Network
+
 ## Installation
 
 ### Pre-requisites
@@ -188,7 +219,7 @@ As local admin
 
 As Non-admin
 
-`python -m pip install torch torchvision matplotlib ipython`
+`python -m pip install torch torchvision matplotlib ipython --index-url https://download.pytorch.org/whl/cu118`
 
 TODO: Create a requirements.txt file to make it easier.
 

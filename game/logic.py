@@ -14,6 +14,11 @@ WIN: str = 'win'
 LOSE: str = 'lose'
 NOT_OVER: str = 'not over'
 
+ACTION_RIGHT: int = 0
+ACTION_DOWN:  int = 1
+ACTION_LEFT:  int = 2
+ACTION_UP:    int = 3
+
 
 class Game:
     matrix: list
@@ -25,6 +30,7 @@ class Game:
     reward_count_fields: int = 0
     reward_sum_field: int = 0
     reward_matrix: list
+    reward_fields: list
     history_matrices: list
     score: int = 0
 
@@ -42,7 +48,7 @@ class Game:
         self.history_matrices = []
         self.score = 0
 
-    def play_step(self, action) -> tuple[int, int, int, list, bool, bool, int]:
+    def play_step(self, action) -> tuple[int, int, int, list, list, bool, bool, int]:
         old_matrix: list = self.matrix
         done: bool = False
         key: str = self._key_from_actionindex(action)
@@ -54,6 +60,7 @@ class Game:
             self.matrix, done, self.reward_count_fields, self.reward_sum_field, self.reward_matrix = left(self.matrix)
         if key == c.KEY_UP:
             self.matrix, done, self.reward_count_fields, self.reward_sum_field, self.reward_matrix = up(self.matrix)
+        self.reward_fields = self.remove_zeros(self.flatten(self.reward_matrix))
         self.reward = self.reward_sum_field
         self.score: int = calculate_score(self.matrix)
         state: str = NOT_OVER
@@ -62,23 +69,41 @@ class Game:
             state = game_state(self.matrix)
             if WIN == state:
                 self.terminated = True
+                self.reward = 100_000
             elif LOSE == state:
                 self.truncated = True
+                self.reward = -100_000
             # elif NOT_OVER == state:
+        else:
+            state = game_state(self.matrix)
+            if LOSE == state:
+                self.truncated = True
+                self.reward = -100_000
+            else:
+                self.reward = -1
         # log(old_matrix, self.matrix, key, self.terminated, self.truncated, self.reward_count_fields, self.reward_sum_field, self.score, state)
-        return self.reward, self.reward_count_fields, self.reward_sum_field, self.reward_matrix, self.terminated, self.truncated, self.score
+        return self.reward, self.reward_count_fields, self.reward_sum_field, self.reward_matrix, self.reward_fields, self.terminated, self.truncated, self.score
 
     @staticmethod
     def _key_from_actionindex(action) -> str:
-        if 0 == action:
+        if ACTION_RIGHT == action:
             key = c.KEY_RIGHT
-        elif 1 == action:
+        elif ACTION_DOWN == action:
             key = c.KEY_DOWN
-        elif 2 == action:
+        elif ACTION_LEFT == action:
             key = c.KEY_LEFT
+        # elif ACTION_UP == action:
         else:
             key = c.KEY_UP
         return key
+
+    @staticmethod
+    def flatten(matrix) -> list:
+        return [x for xs in matrix for x in xs]
+
+    @staticmethod
+    def remove_zeros(vector) -> list:
+        return [i for i in vector if i != 0]
 
 
 def log(old, new, key, terminated, truncated, count_fields, sum_fields, score, state) -> None:

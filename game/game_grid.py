@@ -161,7 +161,7 @@ class GameGrid(Frame):
     #                 .  .  .  8
     # done: False
     # score: 10
-    def play_step(self, action) -> tuple[int, int, int, list, bool, bool, int]:
+    def play_step(self, action) -> tuple[int, int, int, list, list, bool, bool, int]:
         key: str = self._key_from_actionindex(action)
         self._key_down(key)
         score: int = logic.calculate_score(self.matrix)
@@ -169,7 +169,15 @@ class GameGrid(Frame):
                       f'reward_count_field = {self.reward_count_fields}, '
                       f'reward_sum_field = {self.reward_sum_field}, reward_matrix = {self.reward_matrix}, '
                       f'done = {self.done}, score = {score}')
-        return self.reward, self.reward_count_fields, self.reward_sum_field, self.reward_matrix, self.done, self.done, score
+        return self.reward, self.reward_count_fields, self.reward_sum_field, self.reward_matrix, self.remove_zeros(self.flatten(self.reward_matrix)), self.done, self.done, score
+
+    @staticmethod
+    def flatten(matrix) -> list:
+        return [x for xs in matrix for x in xs]
+
+    @staticmethod
+    def remove_zeros(vector) -> list:
+        return [i for i in vector if i != 0]
 
     # Extension for Reinforcement Learning
     @staticmethod
