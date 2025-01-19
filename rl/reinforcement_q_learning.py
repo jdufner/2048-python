@@ -218,18 +218,60 @@ class DQN(nn.Module):
 
     def __init__(self, n_observations, n_actions):
         super(DQN, self).__init__()
-        # hidden_layer_size = 128
-        hidden_layer_size = 256
-        self.layer1 = nn.Linear(n_observations, hidden_layer_size)
-        self.layer2 = nn.Linear(hidden_layer_size, hidden_layer_size)
-        self.layer3 = nn.Linear(hidden_layer_size, n_actions)
+
+        # in: 4x4, out: 4x3
+        self.conv1 = nn.Conv2d(1, 16, (1, 2))
+        # in: 4x4, out: 3x4
+        self.conv2 = nn.Conv2d(1, 16, (2, 1))
+
+        # in: 4x3, out: 4x2
+        self.conv1_1 = nn.Conv2d(16, 128, (1, 2))
+        # in: 4x3, out: 3x3
+        self.conv1_2 = nn.Conv2d(16, 128, (2, 1))
+        # in: 3x4, out: 3x3
+        self.conv2_1 = nn.Conv2d(16, 128, (1, 2))
+        # in: 3x4, out: 2x4
+        self.conv2_2 = nn.Conv2d(16, 128, (2, 1))
+
+        self.linear = nn.Linear(4352, 256)
+        self.out = nn.Linear(256, n_actions)
+
+        # self.main = nn.Sequential(
+        #     nn.Conv2d(1, 16, (1,2)),
+        #     nn.ReLU(),
+        #     nn.Flatten(),
+        #     nn.Linear(4, 4)
+        # )
 
     # Called with either one element to determine next action, or a batch
     # during optimization. Returns tensor([[left0exp,right0exp]...]).
     def forward(self, x):
-        x = F.relu(self.layer1(x))
-        x = F.relu(self.layer2(x))
-        return self.layer3(x)
+        out1 = F.relu(self.conv1(x))
+        out2 = F.relu(self.conv2(x))
+
+        out1_1 = F.relu(self.conv1_1(out1))
+        out1_2 = F.relu(self.conv1_2(out1))
+        out2_1 = F.relu(self.conv2_1(out2))
+        out2_2 = F.relu(self.conv2_2(out2))
+        # out1_1 = F.relu(F.max_pool2d(self.conv1_1(out1), 2))
+        # out1_2 = F.relu(F.max_pool2d(self.conv1_2(out1), 2))
+        # out2_1 = F.relu(F.max_pool2d(self.conv2_1(out2),2))
+        # out2_2 = F.relu(F.max_pool2d(self.conv2_2(out2), 2))
+
+        # Flatten and concatenate
+        out1_1_flat = torch.flatten(out1_1, 1)
+        out1_2_flat = torch.flatten(out1_2, 1)
+        out2_1_flat = torch.flatten(out2_1, 1)
+        out2_2_flat = torch.flatten(out2_2, 1)
+
+        concatenated = torch.cat([out1_1_flat, out1_2_flat, out2_1_flat, out2_2_flat], dim=1)
+        # Reshape concatenated if necessary. This is the fix.
+        if concatenated.shape[0] != 1:  # check if batch size is different from one
+            concatenated = concatenated.view(1, -1)  # reshape batch size to one
+
+        x = F.relu(self.linear(concatenated))
+        x = self.out(x)
+        return x
 
 
 ######################################################################
